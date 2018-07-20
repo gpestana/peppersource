@@ -1,20 +1,27 @@
-## :fire: Pepper source :fire:
+# :fire: Pepper source :fire:
 
-:fire: Pepper source :fire: is a secure and decentralized software distribution 
+Pepper source is a secure and decentralized software distribution 
 utility built on top of [IPFS](https://ipfs.io).
 
 It allows software providers to quickly and securely share software with their
-users without having to worry about infrastructure, security and maintenance. 
+users without having to worry about infrastructure, security, notification
+schemes and maintenance. In the future, it will also allow providers
+to offer incentives to clients who allocate disk space and bandwidth by 
+storing and distributing software bundles.
+
+Pepper source exposes a single primitive which provides **storage**, **replication**,  
+**security**, **notification mechanisms** and **incentives** for software
+releases by leveraging the IPFS protocol stack and distributed file system.
 
 ### Security 
 
-:fire: Pepper source :fire: provides a transparent mechanism for verifying
-content integrity of the software and identity of the provider.
+Pepper source provides a transparent mechanism for verifying content integrity 
+of the software release and identity of the provider:
 
-- The release binaries are signed by the software provider before uploading it
+- The software binaries are signed by the software provider before uploading it
   to IPFS. The signature is performed using asymmetric crypto algorithms so that
-the client can verify the provenience of the software released. This is all done
-transparently and automatically.
+the client can verify the provenience of the software bundle. This process is
+all transparent to the provider.
 
 - Binaries are stored based on their cryptographic hashes, making it easy for
 clients to verify the integrity of the software, even when coming from unknown
@@ -28,8 +35,8 @@ patches, updates, ...) are available through a p2p
 mechanism. The notification contains the hash (content address) of the newly 
 released bundle and metadata about the software bundle being published. With 
 this notification mechanism in place, those interested in the software 
-(subscribers) know *when* an *where from* freshly baked software is ready for 
-download.
+(subscribers) know *when* freshly baked software is ready for download and 
+*where from*.
 
 ### Replication
 
