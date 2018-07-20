@@ -9,14 +9,11 @@ schemes and maintenance. In the future, it will also allow providers
 to offer incentives to clients who allocate disk space and bandwidth by 
 storing and distributing software bundles.
 
-Pepper source exposes a single primitive which provides **storage**, **replication**,  
-**security**, **notification mechanisms** and **incentives** for software
-releases by leveraging the IPFS protocol stack and distributed file system.
+Pepper source exposes primitives to provide **storage**, **replication**,  **security**, **notification mechanisms** and **incentives** for software releases by leveraging the IPFS protocol stack and distributed file system.
 
 ### Security 
 
-Pepper source provides a transparent mechanism for verifying content integrity 
-of the software release and identity of the provider:
+Pepper source provides a transparent mechanism for verifying content integrity of the software release and identity of the provider:
 
 - The software binaries are signed by the software provider before uploading it
   to IPFS. The signature is performed using asymmetric crypto algorithms so that
