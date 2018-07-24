@@ -1,5 +1,0 @@
-{
-  "channels": ["software1", "peppersource"],
-  "destination_dir": "/Users/gpestana/.peppersource",
-  "provider_pubkey_path": "/Users/gpestana/go/src/github.com/gpestana/peppersource/ppsrc-client/sample/public_key.example.pem"
-}

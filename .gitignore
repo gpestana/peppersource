@@ -11,8 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-ppsrc-client/ppsrc-client
-ppsrc-provider/ppsrc-provider
+client/client-cli
+provider/client-cli
 public_key.pem
 private_key.pem
 
