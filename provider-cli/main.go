@@ -16,15 +16,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p, _ := pps.NewProvider(conf)
-	ch := "peppersource"
+	p, err := pps.NewProvider(conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fp := "/Users/gpestana/go/src/github.com/gpestana/peppersource/README.md"
 
 	hash, err := p.Release(fp)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = p.Notify(hash, ch)
+	err = p.Notify(hash)
 	if err != nil {
 		log.Fatal(err)
 	}

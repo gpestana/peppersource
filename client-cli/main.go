@@ -23,6 +23,10 @@ func main() {
 	}
 
 	c.Run()
+
+	// keep running
+	for {
+	}
 }
 
 func getConf() (pps.ClientConf, error) {

@@ -1,8 +1,8 @@
 {
-	"path_bin": "/bin/pwd",
-	"pubsub": {
-		"channels": ["ppsource/pwd", "ppsrouce/test"]
-	},
+  "path_bin": "/bin/pwd",
+  "pubsub": {
+    "channels": ["ppsource/pwd", "ppsource/test"]
+  },
   "metadata": {
     "name": "unix-pwd",
     "version": "1.0.1",

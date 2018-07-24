@@ -1,6 +1,7 @@
 package peppersource
 
 import (
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	ipfs "github.com/ipfs/go-ipfs-api"
@@ -40,18 +41,47 @@ func NewClient(conf ClientConf) (*Client, error) {
 	}
 
 	notificationHandler := func(t string, r ipfs.PubSubRecord) {
-		h := string(r.Data())
-		log.Println(fmt.Sprintf("pubsub (%v); %v: data { %v }", t, r.From(), h))
+		hh := string(r.Data())
+		log.Println(fmt.Sprintf("pubsub (%v); %v: head_data { %v }", t, r.From(), hh))
 
-		// TODO: do verifications
-
-		// ok: download
-		err = cli.shell.Get(h, dir)
+		// download HEAD
+		err = cli.shell.Get(hh, dir)
 		if err != nil {
-			log.Println("ERROR: ", err)
+			log.Println("error downloading HEAD: ", err)
 			return
 		}
-		log.Println(fmt.Sprintf("downloaded %v to %v", h, dir))
+
+		// verify if HEAD is valid
+		hb, err := ioutil.ReadFile(fmt.Sprintf("%v/%v", dir, hh))
+		if err != nil {
+			log.Println("error decoding HEAD: ", err)
+			return
+		}
+
+		valid, err := verifyHead(hb, pk)
+		if !valid {
+			log.Println(fmt.Sprintf("HEAD %v is not valid", hh))
+			return
+		}
+
+		h := Head{}
+		err = json.Unmarshal(hb, &h)
+		if err != nil {
+			log.Println("error decoding HEAD: ", err)
+			return
+		}
+
+		hash := h.Hash()
+		meta := h.Metadata()
+
+		// download bundle
+		err = cli.shell.Get(hash, dir)
+		if err != nil {
+			log.Println("error downloading bundle: ", err)
+			return
+		}
+
+		log.Println(fmt.Sprintf("downloaded %v to %v. \nmetadata: %v", hash, dir, string(meta)))
 	}
 
 	var subs []*Subscription
@@ -85,9 +115,6 @@ func (c *Client) Run() {
 			log.Println(fmt.Sprintf("failed to subscribe to %s: %s", s.topic, err))
 		}
 	}
-	// run as deamon
-	for {
-	}
 }
 
 type Subscription struct {
@@ -114,6 +141,7 @@ func (s *Subscription) Subscribe() error {
 // starts listen to subscripton. once receives data from the channel, starts
 // verification and download process and restart listening the same channel
 func (s *Subscription) listen() {
+	log.Println(fmt.Sprintf("listening to %v channel for updates", s.topic))
 	rec, err := s.pubsub.Next()
 	if err != nil {
 		log.Println(err)

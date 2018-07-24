@@ -5,26 +5,28 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	ipfs "github.com/ipfs/go-ipfs-api"
 	crypto "github.com/libp2p/go-libp2p-crypto"
-	"io"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
 type ProviderConf struct {
 	Path_bin string
 	Pubsub   struct {
-		channels []string
+		Channels []string
 	}
 	PrivKeyPath string
-	Metadata    interface{}
+	Metadata    map[string]string
 }
 
 type Provider struct {
-	shell *ipfs.Shell
-	pk    crypto.PrivKey
-	meta  []byte
+	shell    *ipfs.Shell
+	pk       crypto.PrivKey
+	meta     []byte
+	channels []string
 }
 
 func NewProvider(conf ProviderConf) (*Provider, error) {
@@ -41,6 +43,9 @@ func NewProvider(conf ProviderConf) (*Provider, error) {
 	}
 	block, _ := pem.Decode(pkraw)
 	pk, err := crypto.UnmarshalRsaPrivateKey(block.Bytes)
+	if err != nil {
+		return &prov, err
+	}
 
 	var meta []byte
 	meta, err = json.Marshal(conf.Metadata)
@@ -55,6 +60,7 @@ func NewProvider(conf ProviderConf) (*Provider, error) {
 	prov.meta = meta
 	prov.shell = sh
 	prov.pk = pk
+	prov.channels = conf.Pubsub.Channels
 
 	return &prov, nil
 }
@@ -70,27 +76,30 @@ func (p *Provider) Release(bin string) (string, error) {
 		return "", err
 	}
 
-	// create signed release_meta file and add it to IPFS
-	mbytes, err := buildMeta(binhash, p.meta, p.pk)
+	// creates and signs Head
+	h, err := NewHead(p.meta, binhash, p.pk)
+	if err != nil {
+		return "", err
+	}
+
+	hb, err := json.Marshal(&h)
 	if err != nil {
 		return "", err
 	}
 
 	// returns hash of signed metadata file uploaded to IPFS (used as a pointer
 	// for clients to verify and download release)
-	return p.shell.Add(mbytes)
+	// TODO: Head hash must be saves somewhere for posterity
+	return p.shell.Add(bytes.NewReader(hb))
 }
 
-func (p *Provider) Notify(h string, ch string) error {
-	err := p.shell.PubSubPublish(ch, h)
-	if err != nil {
-		return err
+func (p *Provider) Notify(h string) error {
+	for _, ch := range p.channels {
+		err := p.shell.PubSubPublish(ch, h)
+		if err != nil {
+			return err
+		}
+		log.Println(fmt.Sprintf("Channel '%v' notified with hash %v", ch, h))
 	}
 	return nil
-}
-
-func buildMeta(bhash string, meta []byte, pk crypto.PrivKey) (io.Reader, error) {
-	var mr io.Reader
-	mr = bytes.NewReader(meta)
-	return mr, nil
 }
